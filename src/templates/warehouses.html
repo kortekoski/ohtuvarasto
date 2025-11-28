@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Warehouses - Warehouse Management{% endblock %}
+
+{% block content %}
+<h2>Create New Warehouse</h2>
+<form action="{{ url_for('create_warehouse') }}" method="post">
+    <input type="text" name="name" placeholder="Warehouse name" required>
+    <input type="number" name="capacity" placeholder="Capacity" step="0.1" min="0" required>
+    <button type="submit">Create Warehouse</button>
+</form>
+
+<h2>All Warehouses</h2>
+{% if warehouses %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Capacity</th>
+            <th>Current Stock</th>
+            <th>Available Space</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for name, warehouse in warehouses.items() %}
+        <tr>
+            <td>{{ name }}</td>
+            <td>{{ warehouse.tilavuus }}</td>
+            <td>{{ warehouse.saldo }}</td>
+            <td>{{ warehouse.paljonko_mahtuu() }}</td>
+            <td>
+                <div class="actions">
+                    <form class="inline-form" action="{{ url_for('add_to_warehouse', name=name) }}" method="post">
+                        <input type="number" name="amount" placeholder="Amount" step="0.1" min="0" required>
+                        <button type="submit">Add</button>
+                    </form>
+                    <form class="inline-form" action="{{ url_for('remove_from_warehouse', name=name) }}" method="post">
+                        <input type="number" name="amount" placeholder="Amount" step="0.1" min="0" required>
+                        <button type="submit">Remove</button>
+                    </form>
+                    <form class="inline-form" action="{{ url_for('delete_warehouse', name=name) }}" method="post">
+                        <button type="submit">Delete</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No warehouses yet. Create one above!</p>
+{% endif %}
+{% endblock %}
