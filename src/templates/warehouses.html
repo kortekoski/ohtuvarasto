@@ -10,6 +10,39 @@
     <button type="submit">Create Warehouse</button>
 </form>
 
+<h2>Create New Article</h2>
+<form action="{{ url_for('create_article') }}" method="post">
+    <input type="text" name="name" placeholder="Article name" required>
+    <input type="number" name="size" placeholder="Size" step="0.1" min="0.1" required>
+    <button type="submit">Create Article</button>
+</form>
+
+{% if articles %}
+<h2>Available Articles</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Size</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for name, size in articles.items() %}
+        <tr>
+            <td>{{ name }}</td>
+            <td>{{ size }}</td>
+            <td>
+                <form class="inline-form" action="{{ url_for('delete_article', name=name) }}" method="post">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
 <h2>All Warehouses</h2>
 {% if warehouses %}
 <table>
@@ -31,6 +64,17 @@
             <td>{{ warehouse.paljonko_mahtuu() }}</td>
             <td>
                 <div class="actions">
+                    {% if articles %}
+                    <form class="inline-form" action="{{ url_for('add_article_to_warehouse', wh_name=name) }}" method="post">
+                        <select name="article" required>
+                            <option value="">Select article</option>
+                            {% for art_name, art_size in articles.items() %}
+                            <option value="{{ art_name }}">{{ art_name }} ({{ art_size }})</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit">Add Article</button>
+                    </form>
+                    {% endif %}
                     <form class="inline-form" action="{{ url_for('add_to_warehouse', name=name) }}" method="post">
                         <input type="number" name="amount" placeholder="Amount" step="0.1" min="0" required>
                         <button type="submit">Add</button>
