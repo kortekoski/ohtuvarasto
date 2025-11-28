@@ -39,7 +39,7 @@
                         <input type="number" name="amount" placeholder="Amount" step="0.1" min="0" required>
                         <button type="submit">Remove</button>
                     </form>
-                    <form class="inline-form" action="{{ url_for('delete_warehouse', name=name) }}" method="post">
+                    <form class="inline-form" action="{{ url_for('delete_warehouse', name=name) }}" method="post" onsubmit="return confirm('Are you sure you want to delete {{ name }}?');">
                         <button type="submit">Delete</button>
                     </form>
                 </div>

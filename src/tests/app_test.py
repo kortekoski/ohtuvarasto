@@ -37,6 +37,7 @@ class TestFlaskRoutes(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Test Warehouse", warehouses)
         self.assertAlmostEqual(warehouses["Test Warehouse"].tilavuus, 100)
+        self.assertIn(b"created successfully", response.data)
 
     def test_create_warehouse_duplicate_name(self):
         """Test that duplicate warehouse names are rejected."""
@@ -44,28 +45,31 @@ class TestFlaskRoutes(unittest.TestCase):
             "name": "Duplicate",
             "capacity": "50"
         })
-        self.client.post("/warehouses", data={
+        response = self.client.post("/warehouses", data={
             "name": "Duplicate",
             "capacity": "100"
-        })
+        }, follow_redirects=True)
         # Original warehouse should remain unchanged
         self.assertAlmostEqual(warehouses["Duplicate"].tilavuus, 50)
+        self.assertIn(b"already exists", response.data)
 
     def test_create_warehouse_empty_name(self):
         """Test that empty warehouse names are rejected."""
-        self.client.post("/warehouses", data={
+        response = self.client.post("/warehouses", data={
             "name": "",
             "capacity": "100"
-        })
+        }, follow_redirects=True)
         self.assertEqual(len(warehouses), 0)
+        self.assertIn(b"name is required", response.data)
 
     def test_create_warehouse_invalid_capacity(self):
         """Test that invalid capacity values are handled."""
-        self.client.post("/warehouses", data={
+        response = self.client.post("/warehouses", data={
             "name": "Invalid",
             "capacity": "not_a_number"
-        })
+        }, follow_redirects=True)
         self.assertNotIn("Invalid", warehouses)
+        self.assertIn(b"Invalid capacity", response.data)
 
     def test_list_warehouses_with_items(self):
         """Test listing warehouses when some exist."""
@@ -93,6 +97,7 @@ class TestFlaskRoutes(unittest.TestCase):
         }, follow_redirects=True)
         self.assertEqual(response.status_code, 200)
         self.assertAlmostEqual(warehouses["Add Test"].saldo, 30)
+        self.assertIn(b"Added", response.data)
 
     def test_add_to_nonexistent_warehouse(self):
         """Test adding to a warehouse that doesn't exist."""
@@ -101,6 +106,7 @@ class TestFlaskRoutes(unittest.TestCase):
         }, follow_redirects=True)
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("Nonexistent", warehouses)
+        self.assertIn(b"not found", response.data)
 
     def test_add_invalid_amount(self):
         """Test adding invalid amount to a warehouse."""
@@ -108,11 +114,12 @@ class TestFlaskRoutes(unittest.TestCase):
             "name": "Invalid Add",
             "capacity": "100"
         })
-        self.client.post("/warehouses/Invalid Add/add", data={
+        response = self.client.post("/warehouses/Invalid Add/add", data={
             "amount": "not_a_number"
-        })
+        }, follow_redirects=True)
         # Should remain at 0 since invalid amount is ignored
         self.assertAlmostEqual(warehouses["Invalid Add"].saldo, 0)
+        self.assertIn(b"Invalid amount", response.data)
 
     def test_remove_from_warehouse(self):
         """Test removing content from a warehouse."""
@@ -128,6 +135,7 @@ class TestFlaskRoutes(unittest.TestCase):
         }, follow_redirects=True)
         self.assertEqual(response.status_code, 200)
         self.assertAlmostEqual(warehouses["Remove Test"].saldo, 30)
+        self.assertIn(b"Removed", response.data)
 
     def test_remove_from_nonexistent_warehouse(self):
         """Test removing from a warehouse that doesn't exist."""
@@ -136,6 +144,7 @@ class TestFlaskRoutes(unittest.TestCase):
         }, follow_redirects=True)
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("Nonexistent", warehouses)
+        self.assertIn(b"not found", response.data)
 
     def test_remove_invalid_amount(self):
         """Test removing invalid amount from a warehouse."""
@@ -146,11 +155,12 @@ class TestFlaskRoutes(unittest.TestCase):
         self.client.post("/warehouses/Invalid Remove/add", data={
             "amount": "50"
         })
-        self.client.post("/warehouses/Invalid Remove/remove", data={
+        response = self.client.post("/warehouses/Invalid Remove/remove", data={
             "amount": "not_a_number"
-        })
+        }, follow_redirects=True)
         # Should remain at 50 since invalid amount is ignored
         self.assertAlmostEqual(warehouses["Invalid Remove"].saldo, 50)
+        self.assertIn(b"Invalid amount", response.data)
 
     def test_delete_warehouse(self):
         """Test deleting a warehouse."""
@@ -163,6 +173,7 @@ class TestFlaskRoutes(unittest.TestCase):
                                     follow_redirects=True)
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("Delete Test", warehouses)
+        self.assertIn(b"deleted", response.data)
 
     def test_delete_nonexistent_warehouse(self):
         """Test deleting a warehouse that doesn't exist."""
