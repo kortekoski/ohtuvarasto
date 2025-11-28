@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Warehouses - Warehouse Management{% endblock %}
+
+{% block content %}
+<h2>Create New Warehouse</h2>
+<form action="{{ url_for('create_warehouse') }}" method="post">
+    <input type="text" name="name" placeholder="Warehouse name" required>
+    <input type="number" name="capacity" placeholder="Capacity" step="0.1" min="0" required>
+    <button type="submit">Create Warehouse</button>
+</form>
+
+<h2>Create New Article</h2>
+<form action="{{ url_for('create_article') }}" method="post">
+    <input type="text" name="name" placeholder="Article name" required>
+    <input type="number" name="size" placeholder="Size" step="0.1" min="0.1" required>
+    <button type="submit">Create Article</button>
+</form>
+
+{% if articles %}
+<h2>Available Articles</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Size</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for name, size in articles.items() %}
+        <tr>
+            <td>{{ name }}</td>
+            <td>{{ size }}</td>
+            <td>
+                <form class="inline-form" action="{{ url_for('delete_article', name=name) }}" method="post">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<h2>All Warehouses</h2>
+{% if warehouses %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Capacity</th>
+            <th>Current Stock</th>
+            <th>Available Space</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for name, warehouse in warehouses.items() %}
+        <tr>
+            <td>{{ name }}</td>
+            <td>{{ warehouse.tilavuus }}</td>
+            <td>{{ warehouse.saldo }}</td>
+            <td>{{ warehouse.paljonko_mahtuu() }}</td>
+            <td>
+                <div class="actions">
+                    {% if articles %}
+                    <form class="inline-form" action="{{ url_for('add_article_to_warehouse', wh_name=name) }}" method="post">
+                        <select name="article" required>
+                            <option value="">Select article</option>
+                            {% for art_name, art_size in articles.items() %}
+                            <option value="{{ art_name }}">{{ art_name }} ({{ art_size }})</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit">Add Article</button>
+                    </form>
+                    {% endif %}
+                    <form class="inline-form" action="{{ url_for('add_to_warehouse', name=name) }}" method="post">
+                        <input type="number" name="amount" placeholder="Amount" step="0.1" min="0" required>
+                        <button type="submit">Add</button>
+                    </form>
+                    <form class="inline-form" action="{{ url_for('remove_from_warehouse', name=name) }}" method="post">
+                        <input type="number" name="amount" placeholder="Amount" step="0.1" min="0" required>
+                        <button type="submit">Remove</button>
+                    </form>
+                    <form class="inline-form" action="{{ url_for('delete_warehouse', name=name) }}" method="post" onsubmit="return confirm('Are you sure you want to delete {{ name }}?');">
+                        <button type="submit">Delete</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No warehouses yet. Create one above!</p>
+{% endif %}
+{% endblock %}
